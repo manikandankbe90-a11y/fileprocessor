@@ -1,0 +1,17 @@
+App1.xml
+App2.xml
+App3.xml
+App4.xml
+App5.xml
+InsertData.sql
+ProdVersion.txt
+Resources.resx
+SourceQueries.sql
+Test.csproj
+TestApp1.cs
+TestApp2.cs
+TestApp3.cs
+VersionHistory.txt
+VersionInsert.sql
+deploy.bat
+update.bat
