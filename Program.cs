@@ -28,8 +28,11 @@ class Program
             return;
         }
 
-        // Check for FileList.txt to get files to process
-        var fileListPath = Path.Combine(folderPath, "FileList.txt");
+        // Get the application's base directory (where the exe is located)
+        var appBasePath = AppDomain.CurrentDomain.BaseDirectory;
+        
+        // Check for FileList.txt in the application folder (one-time setup)
+        var fileListPath = Path.Combine(appBasePath, "FileList.txt");
         string[] filesToProcess;
         string[] xmlFiles;
         string[] csFiles;
@@ -38,31 +41,39 @@ class Program
         {
             if (File.Exists(fileListPath))
             {
-                // Read file names from FileList.txt
-                filesToProcess = File.ReadAllLines(fileListPath)
+                // Read file names from FileList.txt in app folder
+                var fileNames = File.ReadAllLines(fileListPath)
                     .Where(line => !string.IsNullOrWhiteSpace(line))
-                    .Select(line => Path.Combine(folderPath, line.Trim()))
-                    .Where(File.Exists)
+                    .Select(line => line.Trim())
                     .ToArray();
+                
+                // Search for each file in all folders and subfolders
+                var foundFiles = new List<string>();
+                foreach (var fileName in fileNames)
+                {
+                    var matchingFiles = Directory.GetFiles(folderPath, fileName, SearchOption.AllDirectories);
+                    foundFiles.AddRange(matchingFiles);
+                }
+                filesToProcess = foundFiles.ToArray();
                 
                 xmlFiles = filesToProcess.Where(f => f.EndsWith(".xml", StringComparison.OrdinalIgnoreCase)).ToArray();
                 csFiles = filesToProcess.Where(f => f.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)).ToArray();
                 
-                Console.WriteLine($"\nReading file list from FileList.txt...");
+                Console.WriteLine($"\nReading file list from FileList.txt (app folder)...");
                 Console.WriteLine($"Found {filesToProcess.Length} file(s) to process:");
                 foreach (var file in filesToProcess)
                 {
-                    Console.WriteLine($"  - {Path.GetFileName(file)}");
+                    Console.WriteLine($"  - {file}");
                 }
             }
             else
             {
                 // Fallback to scanning directory
-                xmlFiles = Directory.GetFiles(folderPath, "*.xml", SearchOption.TopDirectoryOnly);
-                csFiles = Directory.GetFiles(folderPath, "*.cs", SearchOption.TopDirectoryOnly);
+                xmlFiles = Directory.GetFiles(folderPath, "*.xml", SearchOption.AllDirectories);
+                csFiles = Directory.GetFiles(folderPath, "*.cs", SearchOption.AllDirectories);
                 filesToProcess = xmlFiles.Concat(csFiles).ToArray();
                 
-                Console.WriteLine($"\nNo FileList.txt found. Scanning directory...");
+                Console.WriteLine($"\nNo FileList.txt found in app folder. Scanning target directory...");
                 Console.WriteLine($"Found {xmlFiles.Length} XML file(s) and {csFiles.Length} CS file(s):");
                 foreach (var file in xmlFiles)
                 {
@@ -593,8 +604,8 @@ class Program
             }
         }
 
-        // Create new SQL file from SourceQueries.sql template
-        var sourceQueriesFile = Path.Combine(folderPath, "SourceQueries.sql");
+        // Create new SQL file from SourceQueries.sql template (from app folder)
+        var sourceQueriesFile = Path.Combine(appBasePath, "SourceQueries.sql");
         if (File.Exists(sourceQueriesFile))
         {
             try
