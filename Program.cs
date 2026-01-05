@@ -1,7 +1,6 @@
  var content = File.ReadAllText(file, Encoding.UTF8);
  bool modified = false;
 
- // Pattern for PolicyMigrator.cs: private const string Version313 = "3.13"; and LatestVersion = Version313
  var versionConstPattern = @"private\s+const\s+string\s+Version(\d+)\s*=\s*""([^""]*)""\s*;";
  var versionConstMatches = Regex.Matches(content, versionConstPattern);
  
@@ -40,7 +39,6 @@
      }
  }
  
- // Pattern for UpgradeDbSchema methods: public static string UDSV26to27()
  var upgradeMethodPattern = @"public\s+static\s+string\s+UDSV(\d+)to(\d+)\s*\(\)";
  var upgradeMethodMatches = Regex.Matches(content, upgradeMethodPattern);
  
@@ -98,3 +96,4 @@
  {
      Console.WriteLine($"  [--] {Path.GetFileName(file)} - No updates needed");
  }
+
