@@ -1,12 +1,10 @@
-  // Create new sqlcmd line - use regex to replace version numbers
-                        var newSqlcmdLine = Regex.Replace(lastSqlcmdLine, 
-                            @"UDS\d+to\d+", 
-                            $"UDS{lastTo}to{lastTo + 1}");
+ var guidPattern = @"(const\s+string\s+\w+\s*=\s*"")([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})("")";
+ var guidRegex = new Regex(guidPattern);
 
-                        // Also increment log file number if present (e.g., 0827 -> 0828)
-                        var logNumMatch = Regex.Match(lastSqlcmdLine, @"(\d+)\.log");
-                        if (logNumMatch.Success)
-                        {
-                            int logNum = int.Parse(logNumMatch.Groups[1].Value);
-                            newSqlcmdLine = Regex.Replace(newSqlcmdLine, @"\d+\.log", $"{logNum + 1:D4}.log");
-                        }
+ if (guidRegex.IsMatch(content))
+ {
+     var oldGuid = guidRegex.Match(content).Groups[2].Value;
+     content = guidRegex.Replace(content, $"$1{newGuid}$3");
+     modified = true;
+     Console.WriteLine($"  [OK] {Path.GetFileName(file)} - GUID updated: {oldGuid} -> {newGuid}");
+ }
